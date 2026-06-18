@@ -334,13 +334,18 @@ async_notify_thread(void *unused_ptr, unsigned long unused_int) {
 
 	lock_acquire(async_sys_lock);
 	if (async_thread_running != 1) {
-		panic("async_notify_thread: not async_thread_running.\n");
+		panic("async_notify_thread: async_thread_running: %d.\n",
+			async_thread_running);
 	}
 
+	/* Initialise structures. */
 	for (i = 0; i < 32; i ++) {
 		subsystems_in_async[i] = 0;
 		subsystems_to_reply[i] = 0;
 	}
+	/* Notify other threads that startup is complete. */
+	async_thread_running = 2;
+	cv_broadcast(async_wait_cv, async_sys_lock);
 
 	while (1) {
 		for (i = 0; i < 32 && (! subsystems_to_reply[i]); i ++) {
@@ -364,6 +369,9 @@ try_startup_async_notify_thread(void) {
 
 	lock_acquire(async_sys_lock);
 	if (async_thread_running) {
+		while (async_thread_running != 2) {
+			cv_wait(async_wait_cv, async_sys_lock);
+		}
 		lock_release(async_sys_lock);
 		return 0;
 	}
@@ -371,6 +379,10 @@ try_startup_async_notify_thread(void) {
 		async_notify_thread, NULL, 0);
 
 	async_thread_running = 1;
+	/* Wait for the async thread to start up and initialise. */
+	while (async_thread_running != 2) {
+		cv_wait(async_wait_cv, async_sys_lock);
+	}
 	lock_release(async_sys_lock);
 	return result;
 }
