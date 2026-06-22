@@ -493,7 +493,9 @@ command (aux_io_dev_ptr d, int command, unsigned int arg) {
 			return EINVAL;
 	}
 
-	res = test_seq_time_step++;
+	/* Edit: just increment time. Don't change result. */
+	test_seq_time_step++;
+
 	return res;
 }
 
