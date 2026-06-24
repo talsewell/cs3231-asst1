@@ -1,0 +1,20 @@
+# Expected doc.txt format. Remove this line, but keep the headers.
+
+Part 1.1:
+
+# Answer the first question about Part 1 here, and remove this line.
+
+Part 1.2:
+
+Part 2.1:
+
+Part 2.2:
+
+Part 3.1:
+
+Part 3.2:
+
+Part 4.1:
+
+Part 4.2:
+
