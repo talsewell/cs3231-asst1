@@ -78,22 +78,28 @@ def check_docf(docf):
     print('Found:    %r' % parts)
     check('Continue submission anyway?')
 
-def do_submit(docf):
+def do_submit(docf, uname):
   if is_cse():
     run_success('give cs3231 asst1 asst1.bundle %s' % docf)
   else:
-    run_success('scp asst1.bundle %s login.cse.unsw.edu.au:.' % docf)
-    run_success('ssh -t cse give cs3231 asst1 asst1.bundle doc.txt')
+    server = 'login.cse.unsw.edu.au'
+    if uname:
+      server = '%s@%s' % (uname, server)
+    run_success('scp asst1.bundle %s %s:.' % (docf, server))
+    run_success('ssh -t %s give cs3231 asst1 asst1.bundle doc.txt' % server)
 
 def main(args):
   if len(args) != 3:
     print('Usage: python3 submit.py <branch name> <path-to-doc.txt>')
+    print()
+    print('  CSE_USER=username python3 submit.py ... to use a specific CSE username')
+    print()
     sys.exit(2)
   (_, branch, docf) = args
   check_branch(branch)
   check_docf(docf)
   setup_bundle(branch)
-  do_submit(docf)
+  do_submit(docf, os.getenv('CSE_USER'))
 
 if __name__ == '__main__':
   main(sys.argv)
